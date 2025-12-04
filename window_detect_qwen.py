@@ -78,13 +78,38 @@ print("ASSISTANT RESPONSE:", assistant_response)
 # -------------------------------
 # Parse bounding boxes
 # -------------------------------
+import re
 try:
-    boxes = eval(assistant_response)
+    # Try to extract a list from the response using regex
+    list_match = re.search(r'\[\[.*?\]\]', assistant_response, re.DOTALL)
+    if list_match:
+        list_str = list_match.group(0)
+        print(f"Extracted list: {list_str}")
+        boxes = eval(list_str)
+    else:
+        # If no list found, try direct eval
+        boxes = eval(assistant_response)
 except Exception as e:
     print(f"Could not parse bounding boxes. Error: {e}")
     print("Response was:")
     print(response)
-    exit()
+    print("\nTrying alternative detection method...")
+    # Use simple edge detection as fallback
+    import numpy as np
+    img_cv = cv2.imread(image_path)
+    gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, 100, 200)
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    boxes = []
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        if w > 100 and h > 100:  # Filter small contours
+            boxes.append([x, y, x+w, y+h])
+    
+    if not boxes:
+        print("No windows detected using edge detection either.")
+        exit()
 
 print("\nDETECTED BOXES:\n", boxes)
 
