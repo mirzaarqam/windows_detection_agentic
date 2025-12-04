@@ -27,6 +27,9 @@ image = Image.open(image_path).convert("RGB")
 # -------------------------------
 # Ask Qwen2-VL to find window positions
 # -------------------------------
+print(f"Image size: {image.size}")
+print(f"Image mode: {image.mode}")
+
 # Qwen2-VL requires a specific conversation format
 messages = [
     {
@@ -38,7 +41,7 @@ messages = [
             },
             {
                 "type": "text", 
-                "text": "Look at the image and give me bounding boxes of all windows. Format output ONLY as a Python list like: [[x1, y1, x2, y2], [x1, y1, x2, y2]]"
+                "text": "Describe what you see in this image. What is the main object? What are its dimensions and position?"
             },
         ],
     }
@@ -58,23 +61,26 @@ inputs = processor(
 )
 inputs = inputs.to("cpu")
 
-output = model.generate(**inputs, max_new_tokens=200)
+output = model.generate(**inputs, max_new_tokens=500)
 response = processor.batch_decode(output, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
 
 print("\nRAW MODEL OUTPUT:\n", response)
+print("\n" + "="*80 + "\n")
+
+# Extract assistant's response
+if "assistant" in response:
+    assistant_response = response.split("assistant")[-1].strip()
+else:
+    assistant_response = response
+
+print("ASSISTANT RESPONSE:", assistant_response)
+print("\nThe model is describing the image. Run the script again to proceed with detection.")
+exit()
 
 # -------------------------------
-# Parse bounding boxes
+# Parse bounding boxes (disabled for now - testing vision first)
 # -------------------------------
-# Extract just the assistant's response (the part after "assistant")
 try:
-    # Find the assistant's response
-    if "assistant" in response:
-        assistant_response = response.split("assistant")[-1].strip()
-    else:
-        assistant_response = response
-    
-    # Evaluate the Python list
     boxes = eval(assistant_response)
 except Exception as e:
     print(f"Could not parse bounding boxes. Error: {e}")
