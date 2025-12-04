@@ -41,7 +41,7 @@ messages = [
             },
             {
                 "type": "text", 
-                "text": "Describe what you see in this image. What is the main object? What are its dimensions and position?"
+                "text": "Find all windows in this image. For each window, provide the bounding box coordinates as [x1, y1, x2, y2] where (x1,y1) is top-left and (x2,y2) is bottom-right. Return ONLY a Python list of lists, nothing else. Example: [[100, 150, 500, 600], [600, 150, 1000, 600]]"
             },
         ],
     }
@@ -74,11 +74,9 @@ else:
     assistant_response = response
 
 print("ASSISTANT RESPONSE:", assistant_response)
-print("\nThe model is describing the image. Run the script again to proceed with detection.")
-exit()
 
 # -------------------------------
-# Parse bounding boxes (disabled for now - testing vision first)
+# Parse bounding boxes
 # -------------------------------
 try:
     boxes = eval(assistant_response)
