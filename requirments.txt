@@ -1,9 +1,11 @@
 torch==2.2.0
 torchvision==0.17.0
-transformers==4.40.2
+transformers>=4.45.0
 accelerate==0.29.3
 bitsandbytes==0.42.0
 sentencepiece
 protobuf
 Pillow
 opencv-python
+numpy<2.0.0
+qwen-vl-utils
