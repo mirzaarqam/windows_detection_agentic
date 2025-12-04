@@ -2,6 +2,7 @@ import torch
 from transformers import AutoProcessor, AutoModelForVision2Seq
 from PIL import Image
 import cv2
+from qwen_vl_utils import process_vision_info
 
 # -------------------------------
 # Load Qwen2-VL on CPU (GPU not compatible)
@@ -26,18 +27,39 @@ image = Image.open(image_path).convert("RGB")
 # -------------------------------
 # Ask Qwen2-VL to find window positions
 # -------------------------------
-prompt = """
-You are a vision model. 
-Look at the image and give me bounding boxes of all windows. 
+# Qwen2-VL requires a specific conversation format
+messages = [
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "image",
+                "image": image,
+            },
+            {
+                "type": "text", 
+                "text": "Look at the image and give me bounding boxes of all windows. Format output ONLY as a Python list like: [[x1, y1, x2, y2], [x1, y1, x2, y2]]"
+            },
+        ],
+    }
+]
 
-Format output ONLY as a Python list like:
-[[x1, y1, x2, y2], [x1, y1, x2, y2]]
-"""
-
-inputs = processor(text=prompt, images=image, return_tensors="pt").to(model.device)
+# Apply chat template
+text = processor.apply_chat_template(
+    messages, tokenize=False, add_generation_prompt=True
+)
+image_inputs, video_inputs = process_vision_info(messages)
+inputs = processor(
+    text=[text],
+    images=image_inputs,
+    videos=video_inputs,
+    padding=True,
+    return_tensors="pt",
+)
+inputs = inputs.to("cpu")
 
 output = model.generate(**inputs, max_new_tokens=200)
-response = processor.decode(output[0], skip_special_tokens=True)
+response = processor.batch_decode(output, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
 
 print("\nRAW MODEL OUTPUT:\n", response)
 
