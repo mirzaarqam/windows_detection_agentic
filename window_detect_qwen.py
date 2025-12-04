@@ -4,14 +4,15 @@ from PIL import Image
 import cv2
 
 # -------------------------------
-# Load Qwen2-VL in 8-bit quantized
+# Load Qwen2-VL on CPU (GPU not compatible)
 # -------------------------------
 model_name = "Qwen/Qwen2-VL-7B-Instruct"
 
+# Force CPU usage since GPU has incompatible CUDA capability
 model = AutoModelForVision2Seq.from_pretrained(
     model_name,
-    device_map="auto",
-    load_in_8bit=True
+    device_map="cpu",
+    torch_dtype=torch.float32
 )
 
 processor = AutoProcessor.from_pretrained(model_name)
