@@ -1,8 +1,8 @@
-torch==2.2.0
-torchvision==0.17.0
+torch>=2.3.0
+torchvision>=0.18.0
 transformers>=4.45.0
-accelerate==0.29.3
-bitsandbytes==0.42.0
+accelerate>=0.29.3
+bitsandbytes>=0.42.0
 sentencepiece
 protobuf
 Pillow
