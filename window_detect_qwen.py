@@ -66,10 +66,19 @@ print("\nRAW MODEL OUTPUT:\n", response)
 # -------------------------------
 # Parse bounding boxes
 # -------------------------------
+# Extract just the assistant's response (the part after "assistant")
 try:
-    boxes = eval(response)
-except:
-    print("Could not parse bounding boxes. Response was:")
+    # Find the assistant's response
+    if "assistant" in response:
+        assistant_response = response.split("assistant")[-1].strip()
+    else:
+        assistant_response = response
+    
+    # Evaluate the Python list
+    boxes = eval(assistant_response)
+except Exception as e:
+    print(f"Could not parse bounding boxes. Error: {e}")
+    print("Response was:")
     print(response)
     exit()
 
